@@ -1,0 +1,147 @@
+Cobalt/Admin version 0.01
+===========================
+
+Since the Cobalt developers have seen fit not to release a upgrade to Perl,
+nor have they released a way to use the Cobalt administrative web site tools
+with a more recent Perl, users of Cobalt RaQ3/3i/4's have been mostly out of
+luck.
+
+However, based on information from Richard Still found here:
+
+	http://www.oakbox.com/articles/upgrade_perl.html
+
+I was able to build Perl 5.6.1 which will correctly run the admin tools as is,
+without any changes.  So I wrote this module to make it easier for others to do
+it.  There are two ways to go about it:
+
+1) Build Perl to use the libraries in their existing location (EASY WAY)
+2) Install the Cobalt::* files into the Perl 5.6.1 tree where they belong along
+with all supporting modules/software (HARD WAY)
+
+Please follow the path that suits your needs.  I want to emphasize that
+anything you do is completely unsupported by Cobalt/Sun and will likely void
+whatever warranty you have.  Caveat Programmer...
+
+------------------------------------------------------------------------------
+    EASY WAY - COMPILING PERL 5.6.1 TO USE EXISTING COBALT LIBRARY FILES
+------------------------------------------------------------------------------
+
+Download the latest Perl 5.6.x distribution from here:
+
+	http://www.perl.com/pub/a/language/info/software.html
+
+NOTE: after 5.8.0 has been released, it will be listed as the Stable Production
+release and 5.6.1 will be listed under Previous Releases.  You cannot at this
+time use 5.8.0 with the Cobalt modules because it is not binary compatible with
+5.005.  Installing 5.8.0 will not only void your warranty, it will break the
+admin tools and mod_perl.
+
+Unpack the 5.6.1 distribution in an account (preferrably non-root) with a high
+quota; you will need upwards of 60+ MB during the build process, but you can
+delete that when you are done.  For example:
+
+	$ tar -zxvf stable.tar.gz
+	....lots of files extracted...
+
+Now, copy the hints/cobalt.sh file from this distribution to the
+perl-5.6.1/hints directory:
+
+	$ cp Cobalt/hints/cobalt.sh perl-5.6.1/hints
+
+and then build Perl in the following manner:
+
+	$ cd perl-5.6.1
+	$ ./Configure -D hintfile=cobalt -des
+	$ make
+	$ make test
+	$ su
+	# make install
+
+This will build Perl 5.6.1 with the settings needed to use the Cobalt libraries
+in their existing location.  You can now test the management interface.
+
+If, for some reason beyond my understanding, something doesn't work right, you
+can undo this installation by doing the following:
+
+	$ su
+	# cd /usr/bin
+	# rm perl
+	# ln -s perl5.005 perl
+
+This will restore the former version of Perl 5.005, which will return the
+management utilities to their former glory.
+
+------------------------------------------------------------------------------
+    HARD WAY - INSTALLING COBALT LIBRARY FILES AND DEPENDENCIES
+------------------------------------------------------------------------------
+
+The advantage to this method is that you have the most recent versions of only
+those modules required to operate the Cobalt administrative utilities.  The
+modules shipped with the Cobalt installation of Perl 5.005 are, shall we say, a
+little long in the teeth.
+
+WARNING:  this method is not for the faint of heart!  You must be very
+comfortable with your *nix skills and able to stomach the installation of
+multiple executables and libraries into system directories.  I cannot emphasize
+enough that this is totally going to void your warranty, and may just trash
+your machine.  Do this only on a system that is fully backed up and is not live!
+Not only am I not responsible for anything that goes wrong, I disavow all
+knowledge of your activities.
+
+Follow the above instructions to build and install Perl but do not use the
+hints file.  Instead, build Perl like this:
+
+	$ cd perl-5.6.1
+	$ ./Configure -D prefix=/usr -des
+	$ make
+	$ make test
+	$ su
+	# make install
+
+Your management interface is now broken.  You will need to install the
+following software and modules in order to return it to correct operation:
+
+Expat - release 1.95.0 or newer, available from
+
+	http://sourceforge.net/projects/expat/
+
+although I recommend that you install it into the /usr tree instead of
+/usr/local, so you would use
+
+	$ cd expat-1.95.4
+	$ ./configure --prefix=/usr
+	$ make
+	$ su
+	# make install
+
+Once you have installed Expat, you must install the following modules:
+
+	Module		Version
+	-------		-------
+	gettext		1.01
+	pgsql_perl	5-1.9.0
+	XML::Parser	newest
+	MIME::Base64	newest
+	Quota		newest
+	GD		1.19	- old version to support GIF's
+	Cobalt::Admin	0.01
+
+in roughly that order.  To ease installation, you can also use CPAN to install
+Bundle::Cobalt, which will automatically install those modules properly.
+
+NOTE: this method simply copies the Cobalt::*, Apache::*, and mod_perl* modules
+out of their existing locations into the siteperl/5.6.1 tree.  This should be
+fine because we are not recompiling mod_perl and none of the modules copied is
+compile code.
+
+COPYRIGHT AND LICENCE
+
+You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl README file.
+
+Please see the copyright notices in each of the individual modules.  Note
+especially that there may be licensing issues with regard to generating GIF
+images with the GD module.
+
+Copyright (C) 2002 John Peacock <jpeacock@rowman.com>
+
